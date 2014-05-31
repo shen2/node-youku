@@ -1,0 +1,20 @@
+{
+  "name": "youku",
+  "version": "0.0.1",
+  "description": "client of youku.com",
+  "main": "index.js",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:shen2/node-youku.git"
+  },
+  "author": "shen2",
+  "license": "Apache, Version 2.0",
+  "bugs": {
+    "url": "https://github.com/shen2/node-youku/issues"
+  },
+  "dependencies": {
+    "request": "*",
+    "underscore": "*"
+  }
+}
