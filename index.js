@@ -2,21 +2,25 @@ var querystring = require('querystring'),
 	_ = require('underscore'),
 	request = require('request');
 
-var Youku = function(config) {
+var SDK = function(config) {
     if (!config) return false;
     this.config = config;
+};
+
+SDK.prototype.accessTokenUrl = function(){
+	return 'https://openapi.youku.com/v2/oauth2/token';
 };
 
 /**
  * 使用code换取access_token与用户ID
  */
-Youku.prototype.auth = function(code, callback) {
+SDK.prototype.auth = function(code, callback) {
     if (!code)
     	return callback(new Error('code required'));
     if (typeof(code) !== 'string')
     	return callback(new Error('code must be string'));
     
-    request.post('https://openapi.youku.com/v2/oauth2/token', {
+    request.post(this.accessTokenUrl(), {
 	    	form : {
 	    		grant_type	: 'authorization_code',
 	    		code		: code,
@@ -36,35 +40,39 @@ Youku.prototype.auth = function(code, callback) {
 	    });
 };
 
-Youku.prototype.getClient = function(access_token){
-	var client = new Youku.Client(access_token, this.config.app_key);
+SDK.prototype.getClient = function(access_token){
+	var client = new SDK.Client(access_token, this.config.app_key);
 	
 	return client;
 };
 
 /**
- * 构造一个Youku.Client实例
- * Youku.Client用于在拥有access token的情况下访问优酷接口
+ * 构造一个SDK.Client实例
+ * SDK.Client用于在拥有access token的情况下访问优酷接口
  */
-Youku.Client = function(access_token, app_key){
+SDK.Client = function(access_token, app_key){
 	this.access_token = access_token;
 	this.app_key = app_key;
 };
 
-Youku.Client.prototype.get = function(path, data, callback){
-	var url = 'https://openapi.youku.com/v2/' + path + '.json';
+SDK.Client.prototype.apiUrl = function(path){
+	return 'https://openapi.youku.com/v2/' + path + '.json';
+};
+
+SDK.Client.prototype.get = function(path, data, callback){
+	var url = this.apiUrl(path),
 		params = _.extend({
 			client_id	: this.app_key,
 			access_token: this.access_token,
 		}, data);
-	console.log(params);
+	
 	url += '?' + querystring.stringify(params);
 	
 	request.get(url, {json : true}, callback);
 };
 
-Youku.Client.prototype.post = function(path, data, callback){
-	var url = 'https://openapi.youku.com/v2/' + path + '.json',
+SDK.Client.prototype.post = function(path, data, callback){
+	var url = this.apiUrl(path),
 		params = _.extend({
 			client_id	: this.app_key,
 			access_token: this.access_token,
@@ -73,4 +81,4 @@ Youku.Client.prototype.post = function(path, data, callback){
 	request.post(url, {json : true, form:params}, callback);
 };
 
-module.exports = Youku;
+module.exports = SDK;
